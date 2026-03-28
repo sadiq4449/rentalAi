@@ -1,5 +1,9 @@
 (function () {
-    const API_BASE = 'http://127.0.0.1:8000';
+    var base =
+        typeof window !== 'undefined' && window.RENTAL_API_BASE
+            ? String(window.RENTAL_API_BASE).replace(/\/$/, '')
+            : 'http://127.0.0.1:8000';
+    const API_BASE = base;
     const TOKEN_KEY = 'rental_token';
 
     function getToken() {
