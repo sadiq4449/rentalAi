@@ -4,6 +4,23 @@
             ? String(window.RENTAL_API_BASE).replace(/\/$/, '')
             : 'http://127.0.0.1:8000';
     const API_BASE = base;
+
+    function assertApiBase() {
+        if (typeof window === 'undefined') return;
+        var origin = window.location.origin;
+        if (API_BASE === origin) {
+            throw new Error(
+                'API_URL galat hai: ye frontend ki site hai. Railway Variables mein API_URL = backend (FastAPI) ka URL lagao, is frontend ka nahi.'
+            );
+        }
+        var h = window.location.hostname;
+        var isLocal = h === 'localhost' || h === '127.0.0.1';
+        if (!isLocal && (API_BASE.indexOf('127.0.0.1') !== -1 || API_BASE.indexOf('localhost') !== -1)) {
+            throw new Error(
+                'Production mein API_URL ab bhi localhost hai. Railway Variables mein apna FastAPI backend URL set karo.'
+            );
+        }
+    }
     const TOKEN_KEY = 'rental_token';
 
     function getToken() {
@@ -28,6 +45,7 @@
     }
 
     async function api(path, options) {
+        assertApiBase();
         const opts = options || {};
         const headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
         const token = getToken();

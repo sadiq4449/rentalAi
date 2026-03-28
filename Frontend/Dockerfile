@@ -1,13 +1,14 @@
-# Railway: create a SECOND service, set Root Directory = Frontend
-# Build variable: API_URL = your backend URL (e.g. https://xxx.up.railway.app) no trailing slash
+# Railway: Root Directory = Frontend
+# Variables (runtime) → API_URL = https://YOUR-BACKEND-SERVICE.up.railway.app  (no trailing slash)
+# Must be the FastAPI backend URL, NOT this frontend URL — or POST will hit Python http.server → 501
 FROM python:3.11-alpine
 
 WORKDIR /app
 
-ARG API_URL=http://127.0.0.1:8000
 COPY . .
-RUN printf "window.RENTAL_API_BASE = '%s';\n" "${API_URL}" > config.js
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 EXPOSE 8080
 
-CMD sh -c "python -m http.server ${PORT:-8080} --bind 0.0.0.0"
+ENTRYPOINT ["/docker-entrypoint.sh"]
