@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RentHome Pro - Complete Rental Ecosystem</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo" onclick="navigateTo('home')">
+                    <div class="logo-icon">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                            <path d="M16 2L2 10V30H12V20H20V30H30V10L16 2Z" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <div class="logo-text">
+                        <span class="logo-title">RentHome</span>
+                        <span class="logo-tagline">PRO</span>
+                    </div>
+                </div>
+                <div class="nav-links" id="navLinks">
+                    <a href="#" onclick="navigateTo('home')" class="nav-link active">Explore</a>
+                    <a href="#" onclick="navigateTo('favorites')" class="nav-link">Favorites <span class="nav-badge" id="favCount">0</span></a>
+                    <a href="#" onclick="navigateTo('seeker-dashboard')" class="nav-link" id="navSeekerLink" style="display:none">My Rentals</a>
+                    <a href="#" onclick="navigateTo('owner-dashboard')" class="nav-link" id="navOwnerLink" style="display:none">Owner Portal</a>
+                    <a href="#" onclick="navigateTo('admin-panel')" class="nav-link" id="navAdminLink" style="display:none">Admin</a>
+                </div>
+            </div>
+            <div class="nav-right" style="display:flex;align-items:center;gap:0.75rem">
+                <button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
+                    <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"/>
+                        <line x1="12" y1="1" x2="12" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="23"/>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                        <line x1="1" y1="12" x2="3" y2="12"/>
+                        <line x1="21" y1="12" x2="23" y2="12"/>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                </button>
+                <div id="userNav" class="nav-actions" style="display:none;align-items:center;gap:0.5rem">
+                    <span id="userNameDisplay" class="nav-link" style="cursor:default;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+                    <button type="button" class="btn btn-ghost" onclick="logout()">Log out</button>
+                </div>
+                <div id="guestNav" class="nav-actions" style="display:flex;align-items:center;gap:0.5rem">
+                <button class="btn btn-ghost" onclick="showAuthModal('login')">Log in</button>
+                <button class="btn btn-primary" onclick="showAuthModal('signup')">Sign up</button>
+                </div>
+                <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="12" x2="21" y2="12"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="#" onclick="navigateTo('home'); toggleMobileMenu()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            Explore
+        </a>
+        <a href="#" onclick="navigateTo('favorites'); toggleMobileMenu()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+            Favorites
+        </a>
+        <a href="#" id="mobileNavSeekerLink" onclick="navigateTo('seeker-dashboard'); toggleMobileMenu()" style="display:none">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            My Rentals
+        </a>
+        <a href="#" id="mobileNavOwnerLink" onclick="navigateTo('owner-dashboard'); toggleMobileMenu()" style="display:none">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5"/>
+                <path d="M2 12l10 5 10-5"/>
+            </svg>
+            Owner Portal
+        </a>
+        <hr>
+        <a href="#" onclick="showAuthModal('login'); toggleMobileMenu()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                <polyline points="10 17 15 12 10 7"/>
+                <line x1="15" y1="12" x2="3" y2="12"/>
+            </svg>
+            Log in
+        </a>
+        <a href="#" onclick="toggleDarkMode(); toggleMobileMenu()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="5"/>
+                <line x1="12" y1="1" x2="12" y2="3"/>
+            </svg>
+            Toggle Dark Mode
+        </a>
+    </div>
+
+    <!-- Homepage (Seeker View) -->
+    <main class="page active" id="home">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Find Your Perfect Home</h1>
+                <p>Discover thousands of rental properties in your ideal location</p>
+                
+                <!-- Search Bar -->
+                <div class="search-bar">
+                    <div class="search-field">
+                        <label>Location</label>
+                        <input type="text" id="searchLocation" placeholder="City, neighborhood, or address">
+                    </div>
+                    <div class="search-divider"></div>
+                    <div class="search-field">
+                        <label>Price Range</label>
+                        <select id="searchPrice">
+                            <option value="">Any Price</option>
+                            <option value="0-1000">$0 - $1,000</option>
+                            <option value="1000-2000">$1,000 - $2,000</option>
+                            <option value="2000-3000">$2,000 - $3,000</option>
+                            <option value="3000+">$3,000+</option>
+                        </select>
+                    </div>
+                    <div class="search-divider"></div>
+                    <div class="search-field">
+                        <label>Property Type</label>
+                        <select id="searchType">
+                            <option value="">All Types</option>
+                            <option value="apartment">Apartment</option>
+                            <option value="house">House</option>
+                            <option value="condo">Condo</option>
+                            <option value="townhouse">Townhouse</option>
+                        </select>
+                    </div>
+                    <button class="search-btn" onclick="filterProperties()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.35-4.35"/>
+                        </svg>
+                        Search
+                    </button>
+                </div>
+            </div>
+            <div class="hero-bg"></div>
+        </section>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Sidebar Filters -->
+            <aside class="sidebar-filters">
+                <div class="filter-section">
+                    <h3>Filters</h3>
+                    
+                    <div class="filter-group">
+                        <label>Price Range</label>
+                        <div class="price-slider">
+                            <input type="range" id="priceMin" min="0" max="5000" value="0" step="100">
+                            <input type="range" id="priceMax" min="0" max="5000" value="5000" step="100">
+                        </div>
+                        <div class="price-range-display">
+                            <span>$<span id="priceMinDisplay">0</span></span>
+                            <span>$<span id="priceMaxDisplay">5,000</span></span>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Bedrooms</label>
+                        <div class="bedroom-options">
+                            <button class="bedroom-btn" data-value="any">Any</button>
+                            <button class="bedroom-btn" data-value="1">1</button>
+                            <button class="bedroom-btn" data-value="2">2</button>
+                            <button class="bedroom-btn" data-value="3">3</button>
+                            <button class="bedroom-btn" data-value="4+">4+</button>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Property Type</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" value="apartment" class="type-filter">
+                                <span>Apartment</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" value="house" class="type-filter">
+                                <span>House</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" value="condo" class="type-filter">
+                                <span>Condo</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" value="townhouse" class="type-filter">
+                                <span>Townhouse</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Amenities</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" value="wifi" class="amenity-filter">
+                                <span>WiFi</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" value="parking" class="amenity-filter">
+                                <span>Parking</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" value="ac" class="amenity-filter">
+                                <span>Air Conditioning</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" value="pool" class="amenity-filter">
+                                <span>Pool</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-outline btn-full" onclick="resetFilters()">Reset Filters</button>
+                </div>
+            </aside>
+
+            <!-- Property Grid -->
+            <div class="property-section">
+                <div class="section-header">
+                    <h2>Properties <span class="property-count" id="propertyCount">(0)</span></h2>
+                    <div class="sort-dropdown">
+                        <select id="sortProperties" onchange="sortProperties()">
+                            <option value="newest">Newest First</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Loading Skeleton -->
+                <div class="skeleton-grid" id="skeletonGrid">
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                </div>
+
+                <!-- Property Grid -->
+                <div class="property-grid" id="propertyGrid">
+                    <!-- Properties will be rendered here -->
+                </div>
+
+                <!-- No Results -->
+                <div class="no-results" id="noResults" style="display: none;">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.35-4.35"/>
+                    </svg>
+                    <h3>No properties found</h3>
+                    <p>Try adjusting your filters or search criteria</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Favorites -->
+    <main class="page" id="favorites">
+        <div class="main-content" style="grid-template-columns:1fr;padding-top:2rem">
+            <div class="property-section">
+                <div class="section-header">
+                    <h2>Saved properties <span class="property-count" id="favoritesCount">(0)</span></h2>
+                </div>
+                <div class="property-grid" id="favoritesGrid"></div>
+                <div class="no-results" id="emptyFavorites" style="display:none;">
+                    <p>Sign in and tap the heart on listings to save them here.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Seeker dashboard -->
+    <main class="page" id="seeker-dashboard">
+        <div class="dashboard-layout">
+            <aside class="dashboard-sidebar">
+                <div class="sidebar-header">
+                    <div class="user-avatar" id="seekerAvatar">?</div>
+                    <div class="user-info">
+                        <h4 id="seekerName">Guest</h4>
+                        <span>Property seeker</span>
+                    </div>
+                </div>
+                <nav class="sidebar-nav">
+                    <button type="button" class="sidebar-nav-item active" onclick="showSeekerSection('bookings')">Visit requests</button>
+                </nav>
+            </aside>
+            <div class="dashboard-content">
+                <section class="dashboard-section active" id="seeker-section-bookings">
+                    <div class="section-header">
+                        <h2>My visit requests</h2>
+                    </div>
+                    <div class="data-table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Property</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="seekerBookingsBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Property Details Page -->
+    <main class="page" id="property-details">
+        <button class="back-btn" onclick="navigateTo('home')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back to listings
+        </button>
+
+        <div class="property-details-container" id="propertyDetailsContainer">
+            <!-- Will be populated dynamically -->
+        </div>
+    </main>
+
+    <!-- Owner Dashboard -->
+    <main class="page" id="owner-dashboard">
+        <div class="dashboard-layout">
+            <!-- Sidebar -->
+            <aside class="dashboard-sidebar">
+                <div class="sidebar-header">
+                    <div class="user-avatar" id="ownerAvatar">?</div>
+                    <div class="user-info">
+                        <h4 id="ownerName">Owner</h4>
+                        <span>Property Owner</span>
+                    </div>
+                </div>
+                <nav class="sidebar-nav">
+                    <button type="button" class="sidebar-nav-item active" data-section="my-properties" onclick="showOwnerSection('my-properties')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                            <polyline points="9 22 9 12 15 12 15 22"/>
+                        </svg>
+                        My Properties
+                    </button>
+                    <button type="button" class="sidebar-nav-item" data-section="add-property" onclick="showOwnerSection('add-property')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="16"/>
+                            <line x1="8" y1="12" x2="16" y2="12"/>
+                        </svg>
+                        Add Property
+                    </button>
+                    <button type="button" class="sidebar-nav-item" onclick="showOwnerSection('bookings')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                        Visit requests
+                    </button>
+                    <button type="button" class="sidebar-nav-item" data-section="messages" onclick="showOwnerSection('messages')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        Messages
+                    </button>
+                    <button type="button" class="sidebar-nav-item" data-section="settings" onclick="showOwnerSection('settings')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                        </svg>
+                        Settings
+                    </button>
+                </nav>
+            </aside>
+
+            <!-- Main Dashboard Content -->
+            <div class="dashboard-content">
+                <!-- My Properties Section -->
+                <section class="dashboard-section active" id="section-my-properties">
+                    <div class="section-header">
+                        <h2>My Properties</h2>
+                        <button class="btn btn-primary" onclick="showOwnerSection('add-property')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                            Add Property
+                        </button>
+                    </div>
+                    <div class="owner-properties-grid" id="ownerPropertiesGrid">
+                        <!-- Owner properties will be rendered here -->
+                    </div>
+                </section>
+
+                <!-- Add Property Section -->
+                <section class="dashboard-section" id="section-add-property">
+                    <div class="section-header">
+                        <h2 id="propertyFormTitle">Add New Property</h2>
+                    </div>
+                    <form class="property-form" id="addPropertyForm" onsubmit="handleAddProperty(event)">
+                        <input type="hidden" id="editPropertyId" value="">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="propTitle">Property Title *</label>
+                                <input type="text" id="propTitle" required placeholder="e.g., Modern Downtown Apartment">
+                            </div>
+                            <div class="form-group">
+                                <label for="propPrice">Monthly Rent ($) *</label>
+                                <input type="number" id="propPrice" required min="0" placeholder="e.g., 2500">
+                            </div>
+                            <div class="form-group">
+                                <label for="propLocation">Location *</label>
+                                <input type="text" id="propLocation" required placeholder="City, State">
+                            </div>
+                            <div class="form-group">
+                                <label for="propType">Property Type *</label>
+                                <select id="propType" required>
+                                    <option value="">Select type</option>
+                                    <option value="apartment">Apartment</option>
+                                    <option value="house">House</option>
+                                    <option value="condo">Condo</option>
+                                    <option value="townhouse">Townhouse</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="propBedrooms">Bedrooms</label>
+                                <select id="propBedrooms">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5+</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="propBathrooms">Bathrooms</label>
+                                <select id="propBathrooms">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4+</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="propDescription">Description</label>
+                            <textarea id="propDescription" rows="4" placeholder="Describe your property..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Amenities</label>
+                            <div class="amenities-grid">
+                                <label class="amenity-checkbox">
+                                    <input type="checkbox" value="wifi">
+                                    <span>WiFi</span>
+                                </label>
+                                <label class="amenity-checkbox">
+                                    <input type="checkbox" value="parking">
+                                    <span>Parking</span>
+                                </label>
+                                <label class="amenity-checkbox">
+                                    <input type="checkbox" value="ac">
+                                    <span>Air Conditioning</span>
+                                </label>
+                                <label class="amenity-checkbox">
+                                    <input type="checkbox" value="pool">
+                                    <span>Pool</span>
+                                </label>
+                                <label class="amenity-checkbox">
+                                    <input type="checkbox" value="gym">
+                                    <span>Gym</span>
+                                </label>
+                                <label class="amenity-checkbox">
+                                    <input type="checkbox" value="laundry">
+                                    <span>In-unit Laundry</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Images</label>
+                            <div class="image-upload-area" id="imageUploadArea" onclick="document.getElementById('imageInput').click()">
+                                <input type="file" id="imageInput" accept="image/*" multiple style="display: none;" onchange="handleImageUpload(event)">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                                    <polyline points="21 15 16 10 5 21"/>
+                                </svg>
+                                <p>Click to upload images or drag and drop</p>
+                                <span>Supports: JPG, PNG, WebP (max 10MB each)</span>
+                            </div>
+                            <div class="image-preview-grid" id="imagePreviewGrid"></div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-ghost" onclick="showOwnerSection('my-properties')">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Add Property</button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Owner visit requests -->
+                <section class="dashboard-section" id="section-bookings">
+                    <div class="section-header">
+                        <h2>Visit requests</h2>
+                    </div>
+                    <div class="data-table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Property</th>
+                                    <th>Guest</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ownerBookingsBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Messages Section -->
+                <section class="dashboard-section" id="section-messages">
+                    <div class="section-header">
+                        <h2>Messages</h2>
+                    </div>
+                    <div class="chat-list" id="ownerChatList"></div>
+                </section>
+
+                <!-- Settings Section -->
+                <section class="dashboard-section" id="section-settings">
+                    <div class="section-header">
+                        <h2>Settings</h2>
+                    </div>
+                    <form class="settings-form">
+                        <div class="form-group">
+                            <label>Profile Picture</label>
+                            <div class="profile-upload">
+                                <div class="user-avatar large">JD</div>
+                                <button type="button" class="btn btn-outline">Change Photo</button>
+                            </div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" value="John Doe">
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" value="john.doe@example.com">
+                            </div>
+                            <div class="form-group">
+                                <label>Phone</label>
+                                <input type="tel" value="+1 (555) 123-4567">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Admin Panel -->
+    <main class="page" id="admin-panel">
+        <div class="dashboard-layout">
+            <aside class="dashboard-sidebar admin">
+                <div class="sidebar-header">
+                    <div class="user-avatar admin">AD</div>
+                    <div class="user-info">
+                        <h4>Admin User</h4>
+                        <span>Administrator</span>
+                    </div>
+                </div>
+                <nav class="sidebar-nav">
+                    <button type="button" class="sidebar-nav-item active" data-admin-section="users" onclick="showAdminSection('users')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                        Users
+                    </button>
+                    <button type="button" class="sidebar-nav-item" data-admin-section="listings" onclick="showAdminSection('listings')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                            <polyline points="9 22 9 12 15 12 15 22"/>
+                        </svg>
+                        Listings
+                    </button>
+                    <button type="button" class="sidebar-nav-item" data-admin-section="reports" onclick="showAdminSection('reports')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                        Reports
+                    </button>
+                </nav>
+            </aside>
+
+            <div class="dashboard-content">
+                <!-- Users Section -->
+                <section class="dashboard-section active" id="admin-section-users">
+                    <div class="section-header">
+                        <h2>User Management</h2>
+                        <div class="search-box">
+                            <input type="text" placeholder="Search users...">
+                            <button class="btn btn-primary">Add User</button>
+                        </div>
+                    </div>
+                    <div class="data-table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Role</th>
+                                    <th>Properties</th>
+                                    <th>Joined</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="6" style="color:var(--text-secondary);padding:2rem">Tier 1 prototype: manage users is not implemented. Use the <strong>Listings</strong> tab to approve or reject property listings.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Listings Section -->
+                <section class="dashboard-section" id="admin-section-listings">
+                    <div class="section-header">
+                        <h2>Property Listings</h2>
+                        <div class="search-box">
+                            <input type="text" placeholder="Search listings...">
+                        </div>
+                    </div>
+                    <div class="data-table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Property</th>
+                                    <th>Owner</th>
+                                    <th>Price</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminListingsTable">
+                                <!-- Will be populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Reports Section -->
+                <section class="dashboard-section" id="admin-section-reports">
+                    <div class="section-header">
+                        <h2>Reports</h2>
+                    </div>
+                    <div class="reports-grid">
+                        <div class="report-card">
+                            <h4>Total Users</h4>
+                            <div class="report-value">1,245</div>
+                            <span class="report-change positive">+12% this month</span>
+                        </div>
+                        <div class="report-card">
+                            <h4>Active Listings</h4>
+                            <div class="report-value">856</div>
+                            <span class="report-change positive">+8% this month</span>
+                        </div>
+                        <div class="report-card">
+                            <h4>Pending Approvals</h4>
+                            <div class="report-value">23</div>
+                            <span class="report-change negative">+5 this week</span>
+                        </div>
+                        <div class="report-card">
+                            <h4>Messages Sent</h4>
+                            <div class="report-value">3,421</div>
+                            <span class="report-change positive">+24% this month</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Booking Modal -->
+    <div class="modal-overlay" id="bookingModal">
+        <div class="modal" style="max-width:440px">
+            <button type="button" class="modal-close" onclick="closeBookingModal()" aria-label="Close">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+            <h2 style="margin-bottom:1rem;font-size:1.25rem">Request a visit</h2>
+            <form id="bookingForm" onsubmit="submitBooking(event)">
+                <input type="hidden" id="bookingPropertyId" value="">
+                <div class="form-group">
+                    <label for="bookingDate">Date</label>
+                    <input type="date" id="bookingDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="bookingTime">Time</label>
+                    <input type="text" id="bookingTime" required placeholder="e.g. 10:00 AM">
+                </div>
+                <div class="form-group">
+                    <label for="bookingNotes">Notes (optional)</label>
+                    <textarea id="bookingNotes" rows="3" placeholder="Anything the owner should know"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Submit request</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Chat Modal -->
+    <div class="chat-modal" id="chatModal">
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="chat-user">
+                    <div class="user-avatar" id="chatAvatar">SJ</div>
+                    <div class="chat-user-info">
+                        <h4 id="chatUserName">Sarah Johnson</h4>
+                        <span class="online-status">Online</span>
+                    </div>
+                </div>
+                <button class="btn btn-ghost" onclick="closeChat()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="chat-body" id="chatBody">
+                <div class="chat-message received">
+                    <p>Hi, is the apartment still available?</p>
+                    <span class="message-time">2:30 PM</span>
+                </div>
+                <div class="chat-message sent">
+                    <p>Yes, it is! Would you like to schedule a viewing?</p>
+                    <span class="message-time">2:32 PM</span>
+                </div>
+                <div class="chat-message received">
+                    <p>That would be great. I'm available this weekend.</p>
+                    <span class="message-time">2:35 PM</span>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Type a message..." onkeypress="handleChatKeypress(event)">
+                <button class="btn btn-primary" onclick="sendMessage()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"/>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div class="modal-overlay" id="authModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeAuthModal()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="login">Log in</button>
+                <button class="auth-tab" data-tab="signup">Sign up</button>
+            </div>
+            
+            <!-- Login Form -->
+            <form class="auth-form active" id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" required placeholder="your@email.com" autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" required placeholder="Enter your password" autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Log in</button>
+            </form>
+
+            <!-- Signup Form -->
+            <form class="auth-form" id="signupForm" onsubmit="handleSignup(event)">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="signupName" required placeholder="John Doe" autocomplete="name">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="signupEmail" required placeholder="your@email.com" autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="signupPassword" required placeholder="Create a password" minlength="6" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label>I am a</label>
+                    <div class="role-selector">
+                        <label class="role-option">
+                            <input type="radio" name="role" value="seeker" checked>
+                            <span>Property Seeker</span>
+                        </label>
+                        <label class="role-option">
+                            <input type="radio" name="role" value="owner">
+                            <span>Property Owner</span>
+                        </label>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Sign up</button>
+                <p class="auth-terms">
+                    By signing up, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="api.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
