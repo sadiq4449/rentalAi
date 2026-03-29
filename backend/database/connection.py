@@ -6,7 +6,17 @@ from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
 load_dotenv()
 
-MONGODB_URL = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
+# Railway often provides MONGO_URL; our docs used MONGODB_URL — accept both (+ common DATABASE_URL for Mongo)
+def _resolve_mongo_url() -> str:
+    return (
+        os.getenv("MONGODB_URL")
+        or os.getenv("MONGO_URL")
+        or os.getenv("DATABASE_URL")
+        or "mongodb://localhost:27017"
+    )
+
+
+MONGODB_URL = _resolve_mongo_url()
 DATABASE_NAME = os.getenv("DATABASE_NAME", "rentalhome")
 
 _client: AsyncIOMotorClient | None = None
