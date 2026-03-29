@@ -10,6 +10,9 @@ COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/ .
+# Frontend as static files; API + UI from one Railway service (POST /api/* hits FastAPI, not 501)
+COPY Frontend/ ./static/
+RUN printf '%s\n' 'window.RENTAL_API_BASE = window.location.origin;' > static/config.js
 
 EXPOSE 8000
 

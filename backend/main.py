@@ -1,7 +1,9 @@
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from database.connection import init_db
 from routes import admin, auth, bookings, chat, favorites, properties
@@ -38,3 +40,9 @@ app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
 @app.get("/api/health")
 async def health():
     return {"status": "ok"}
+
+
+# Same-origin UI + API (Railway: one URL). Requires Frontend copied to ./static/ (see root Dockerfile).
+_STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+if os.path.isdir(_STATIC_DIR):
+    app.mount("/", StaticFiles(directory=_STATIC_DIR, html=True), name="static")
