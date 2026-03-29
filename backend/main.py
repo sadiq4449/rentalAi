@@ -1,3 +1,4 @@
+import logging
 import os
 from contextlib import asynccontextmanager
 
@@ -9,13 +10,22 @@ from database.connection import init_db
 from routes import admin, auth, bookings, chat, favorites, properties
 from services import auth_service
 
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_db()
-    from database.connection import get_db
+    # Railway has no local MongoDB — if MONGODB_URL is missing/wrong, startup used to crash → "Application failed to respond"
+    try:
+        await init_db()
+        from database.connection import get_db
 
-    await auth_service.ensure_default_admin(get_db())
+        await auth_service.ensure_default_admin(get_db())
+    except Exception:
+        logger.exception(
+            "MongoDB init failed — set MONGODB_URL in Railway Variables (e.g. MongoDB Atlas). "
+            "App will still start; API calls need DB."
+        )
     yield
 
 
@@ -39,6 +49,12 @@ app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
 
 @app.get("/api/health")
 async def health():
+    return {"status": "ok"}
+
+
+@app.get("/health")
+async def health_root():
+    """Railway / probes often use /health"""
     return {"status": "ok"}
 
 

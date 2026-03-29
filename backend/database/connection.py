@@ -15,7 +15,8 @@ _client: AsyncIOMotorClient | None = None
 def get_client() -> AsyncIOMotorClient:
     global _client
     if _client is None:
-        _client = AsyncIOMotorClient(MONGODB_URL)
+        # Fail fast on Railway if MONGODB_URL wrong (default 30s is too long for startup)
+        _client = AsyncIOMotorClient(MONGODB_URL, serverSelectionTimeoutMS=8000)
     return _client
 
 
