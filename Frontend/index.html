@@ -866,7 +866,14 @@
     <!-- Toast Notifications -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <script src="config.js"></script>
+    <!-- API base: Railway (HTTPS) must use same origin — never cached localhost config.js -->
+    <script>
+        (function () {
+            var h = window.location.hostname;
+            var isLocal = h === 'localhost' || h === '127.0.0.1';
+            window.RENTAL_API_BASE = isLocal ? 'http://127.0.0.1:8000' : window.location.origin;
+        })();
+    </script>
     <script src="api.js"></script>
     <script src="script.js"></script>
 </body>
