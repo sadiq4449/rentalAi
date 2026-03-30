@@ -85,3 +85,28 @@ async def ensure_default_admin(db: AsyncIOMotorDatabase) -> None:
         "created_at": now,
     }
     await db.users.insert_one(doc)
+
+
+async def setup_super_admin(
+    db: AsyncIOMotorDatabase, email: str, password: str
+) -> dict:
+    """Create a super admin user only if no admin account exists yet."""
+    existing_admin = await db.users.find_one({"role": Role.admin.value})
+    if existing_admin:
+        raise HTTPException(
+            status_code=409,
+            detail="An admin account already exists. Setup is disabled.",
+        )
+    existing_email = await db.users.find_one({"email": email.lower()})
+    if existing_email:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    now = datetime.now(timezone.utc)
+    doc = {
+        "email": email.lower(),
+        "password_hash": hash_password(password),
+        "name": "Super Admin",
+        "role": Role.admin.value,
+        "created_at": now,
+    }
+    result = await db.users.insert_one(doc)
+    return {"message": "Super admin created successfully", "id": str(result.inserted_id)}
