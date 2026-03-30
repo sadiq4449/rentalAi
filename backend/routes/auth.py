@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from motor.motor_asyncio import AsyncIOMotorDatabase
+from pydantic import BaseModel, EmailStr, Field
 
 from deps import create_access_token, get_current_user, get_database
 from models.user import Token, UserCreate, UserLogin, UserOut
@@ -25,3 +26,19 @@ async def login(data: UserLogin, db: AsyncIOMotorDatabase = Depends(get_database
 @router.get("/me", response_model=UserOut)
 async def me(user: UserOut = Depends(get_current_user)):
     return user
+
+
+class SetupAdminRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=6)
+
+
+@router.post("/setup-admin")
+async def setup_admin(
+    data: SetupAdminRequest, db: AsyncIOMotorDatabase = Depends(get_database)
+):
+    """
+    One-time endpoint to create the super admin account.
+    Fails with 409 if any admin user already exists.
+    """
+    return await auth_service.setup_super_admin(db, data.email, data.password)
