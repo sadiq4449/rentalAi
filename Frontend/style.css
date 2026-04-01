@@ -1777,6 +1777,13 @@ img {
     font-weight: 600;
 }
 
+.auth-hint {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    margin: 0.5rem 0 0;
+    line-height: 1.4;
+}
+
 .auth-terms {
     text-align: center;
     font-size: 0.75rem;

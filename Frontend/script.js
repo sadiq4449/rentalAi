@@ -793,15 +793,16 @@ async function handleSignup(e) {
     var password = document.getElementById('signupPassword').value;
     var role = document.querySelector('input[name="role"]:checked');
     try {
+        var roleVal = role ? role.value : 'seeker';
         var res = await RentalAPI.auth.register({
             name: name,
             email: email,
             password: password,
-            role: role ? role.value : 'seeker',
+            role: roleVal,
         });
         RentalAPI.setToken(res.access_token);
         await refreshSession();
-        showToast('Account created', 'success');
+        showToast(roleVal === 'admin' ? 'Super Admin account created' : 'Account created', 'success');
         closeAuthModal();
         loadHome();
     } catch (err) {
