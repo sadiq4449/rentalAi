@@ -12,6 +12,16 @@ LISTING_APPROVED = "approved"
 LISTING_REJECTED = "rejected"
 
 
+def _opt_coord(doc: dict, key: str) -> Optional[float]:
+    v = doc.get(key)
+    if v is None:
+        return None
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return None
+
+
 def _to_out(doc: dict) -> PropertyOut:
     return PropertyOut(
         id=str(doc["_id"]),
@@ -26,6 +36,8 @@ def _to_out(doc: dict) -> PropertyOut:
         amenities=list(doc.get("amenities") or []),
         images=list(doc.get("images") or []),
         listing_status=doc.get("listing_status", LISTING_PENDING),
+        latitude=_opt_coord(doc, "latitude"),
+        longitude=_opt_coord(doc, "longitude"),
         created_at=doc.get("created_at"),
     )
 
@@ -48,6 +60,9 @@ async def create_property(
         "listing_status": LISTING_PENDING,
         "created_at": now,
     }
+    if data.latitude is not None and data.longitude is not None:
+        doc["latitude"] = data.latitude
+        doc["longitude"] = data.longitude
     result = await db.properties.insert_one(doc)
     doc["_id"] = result.inserted_id
     return _to_out(doc)
@@ -155,6 +170,10 @@ async def update_property(
         patch["amenities"] = data.amenities
     if data.images is not None:
         patch["images"] = data.images
+    if data.latitude is not None:
+        patch["latitude"] = data.latitude
+    if data.longitude is not None:
+        patch["longitude"] = data.longitude
     if patch:
         await db.properties.update_one({"_id": oid}, {"$set": patch})
     updated = await db.properties.find_one({"_id": oid})

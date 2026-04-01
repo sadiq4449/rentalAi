@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class PropertyCreate(BaseModel):
@@ -14,6 +14,14 @@ class PropertyCreate(BaseModel):
     description: str = ""
     amenities: List[str] = []
     images: List[str] = []
+    latitude: Optional[float] = Field(default=None, ge=-90.0, le=90.0)
+    longitude: Optional[float] = Field(default=None, ge=-180.0, le=180.0)
+
+    @model_validator(mode="after")
+    def latitude_longitude_pair(self):
+        if (self.latitude is None) ^ (self.longitude is None):
+            raise ValueError("Provide both latitude and longitude, or neither")
+        return self
 
 
 class PropertyUpdate(BaseModel):
@@ -26,6 +34,14 @@ class PropertyUpdate(BaseModel):
     description: Optional[str] = None
     amenities: Optional[List[str]] = None
     images: Optional[List[str]] = None
+    latitude: Optional[float] = Field(default=None, ge=-90.0, le=90.0)
+    longitude: Optional[float] = Field(default=None, ge=-180.0, le=180.0)
+
+    @model_validator(mode="after")
+    def latitude_longitude_pair(self):
+        if (self.latitude is None) ^ (self.longitude is None):
+            raise ValueError("Provide both latitude and longitude, or neither")
+        return self
 
 
 class PropertyOut(BaseModel):
@@ -41,6 +57,8 @@ class PropertyOut(BaseModel):
     amenities: List[str]
     images: List[str]
     listing_status: str
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     created_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}

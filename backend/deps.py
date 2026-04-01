@@ -10,6 +10,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from database.connection import get_db
 from models.user import Role, UserOut
+from services.auth_service import user_doc_to_out
 
 SECRET_KEY = os.getenv("JWT_SECRET", "local-dev-secret-change-me")
 ALGORITHM = "HS256"
@@ -48,13 +49,7 @@ async def get_current_user_optional(
         doc = await db.users.find_one({"_id": ObjectId(uid)})
         if not doc:
             return None
-        return UserOut(
-            id=str(doc["_id"]),
-            email=doc["email"],
-            name=doc["name"],
-            role=doc["role"],
-            created_at=doc.get("created_at"),
-        )
+        return user_doc_to_out(doc)
     except (JWTError, InvalidId):
         return None
 

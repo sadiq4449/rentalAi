@@ -17,6 +17,11 @@ const state = {
     chatReceiverId: null,
     chatPropertyId: null,
     conversations: [],
+    exploreMap: null,
+    exploreMarkersLayer: null,
+    ownerMap: null,
+    ownerMarker: null,
+    detailMap: null,
 };
 
 function initials(name) {
@@ -174,8 +179,14 @@ function propImage(p) {
 }
 
 function navigateTo(page) {
+    if (state.detailMap && page !== 'property-details') {
+        try {
+            state.detailMap.remove();
+        } catch (e) {}
+        state.detailMap = null;
+    }
     if (page === 'admin-panel' && (!state.currentUser || state.currentUser.role !== 'admin')) {
-        showToast('Admin access only. Sign in as admin@local.test', 'error');
+        showToast('Admin access only. Sign in with an admin account.', 'error');
         return;
     }
     if (page === 'owner-dashboard' && state.currentUser && state.currentUser.role === 'seeker') {
@@ -329,6 +340,124 @@ function renderProperties(list) {
     grid.style.display = 'grid';
     if (noResults) noResults.style.display = 'none';
     grid.innerHTML = list.map(createPropertyCard).join('');
+    refreshExploreMap(list);
+}
+
+function refreshExploreMap(list) {
+    if (typeof L === 'undefined') return;
+    var el = document.getElementById('exploreMap');
+    if (!el) return;
+    if (!state.exploreMap) {
+        state.exploreMap = L.map('exploreMap', { scrollWheelZoom: false }).setView([20, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        }).addTo(state.exploreMap);
+        state.exploreMarkersLayer = L.layerGroup().addTo(state.exploreMap);
+    } else {
+        state.exploreMarkersLayer.clearLayers();
+    }
+    var bounds = [];
+    (list || []).forEach(function (p) {
+        if (p.latitude == null || p.longitude == null) return;
+        var lat = Number(p.latitude);
+        var lng = Number(p.longitude);
+        if (isNaN(lat) || isNaN(lng)) return;
+        var m = L.marker([lat, lng]);
+        m.bindPopup(
+            '<b>' +
+                escapeHtml(p.title) +
+                '</b><br>' +
+                escapeHtml(p.location) +
+                '<br><span style="font-size:12px;color:#666">$' +
+                Number(p.price).toLocaleString() +
+                '/mo</span>'
+        );
+        m.on('click', function () {
+            showPropertyDetails(p.id);
+        });
+        m.addTo(state.exploreMarkersLayer);
+        bounds.push([lat, lng]);
+    });
+    if (bounds.length) {
+        state.exploreMap.fitBounds(bounds, { padding: [28, 28], maxZoom: 14 });
+    }
+    setTimeout(function () {
+        if (state.exploreMap) state.exploreMap.invalidateSize();
+    }, 200);
+}
+
+function setOwnerMapCoords(lat, lng) {
+    var la = document.getElementById('propLatitude');
+    var lo = document.getElementById('propLongitude');
+    if (la) la.value = String(lat);
+    if (lo) lo.value = String(lng);
+}
+
+function initOwnerPropertyMap(lat, lng) {
+    if (typeof L === 'undefined') return;
+    var el = document.getElementById('ownerPropertyMap');
+    if (!el) return;
+    if (state.ownerMap) {
+        try {
+            state.ownerMap.remove();
+        } catch (e) {}
+        state.ownerMap = null;
+        state.ownerMarker = null;
+    }
+    var has = lat != null && lng != null && !isNaN(lat) && !isNaN(lng);
+    var center = has ? [lat, lng] : [20, 0];
+    var zoom = has ? 14 : 2;
+    state.ownerMap = L.map(el).setView(center, zoom);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    }).addTo(state.ownerMap);
+    if (has) {
+        state.ownerMarker = L.marker(center, { draggable: true }).addTo(state.ownerMap);
+        state.ownerMarker.on('dragend', function (e) {
+            var ll = e.target.getLatLng();
+            setOwnerMapCoords(ll.lat, ll.lng);
+        });
+    }
+    state.ownerMap.on('click', function (e) {
+        var ll = e.latlng;
+        if (state.ownerMarker) {
+            state.ownerMarker.setLatLng(ll);
+        } else {
+            state.ownerMarker = L.marker(ll, { draggable: true }).addTo(state.ownerMap);
+            state.ownerMarker.on('dragend', function (ev) {
+                var x = ev.target.getLatLng();
+                setOwnerMapCoords(x.lat, x.lng);
+            });
+        }
+        setOwnerMapCoords(ll.lat, ll.lng);
+    });
+    setTimeout(function () {
+        if (state.ownerMap) state.ownerMap.invalidateSize();
+    }, 250);
+}
+
+function initDetailPropertyMap(p) {
+    if (typeof L === 'undefined') return;
+    if (p.latitude == null || p.longitude == null) return;
+    var lat = Number(p.latitude);
+    var lng = Number(p.longitude);
+    if (isNaN(lat) || isNaN(lng)) return;
+    var el = document.getElementById('propertyDetailMap');
+    if (!el) return;
+    if (state.detailMap) {
+        try {
+            state.detailMap.remove();
+        } catch (e) {}
+        state.detailMap = null;
+    }
+    state.detailMap = L.map(el).setView([lat, lng], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap',
+    }).addTo(state.detailMap);
+    L.marker([lat, lng]).addTo(state.detailMap);
+    setTimeout(function () {
+        if (state.detailMap) state.detailMap.invalidateSize();
+    }, 200);
 }
 
 function createPropertyCard(p) {
@@ -421,6 +550,10 @@ async function showPropertyDetails(propertyId) {
         state.currentPropertyDetail = p;
         var imgs = p.images && p.images.length ? p.images : [PLACEHOLDER_IMG];
         var rest = imgs.slice(1, 3);
+        var hasMap = p.latitude != null && p.longitude != null;
+        var mapBlock = hasMap
+            ? '<div class="property-detail-map-wrap"><div id="propertyDetailMap" class="leaflet-map-detail"></div></div>'
+            : '';
         container.innerHTML =
             '<div class="property-gallery">' +
             '<div class="gallery-main"><img src="' +
@@ -432,6 +565,7 @@ async function showPropertyDetails(propertyId) {
                 })
                 .join('') +
             '</div>' +
+            mapBlock +
             '<div class="property-details-grid">' +
             '<div class="property-details-main">' +
             '<h1>' +
@@ -465,6 +599,7 @@ async function showPropertyDetails(propertyId) {
             '<button type="button" class="btn btn-primary" onclick="openChatFromProperty()">Message owner</button>' +
             '<button type="button" class="btn btn-outline" onclick="openBookingForCurrentProperty()">Request visit</button>' +
             '</div></div></div></div>';
+        if (hasMap) initDetailPropertyMap(p);
     } catch (e) {
         container.innerHTML = '<p style="padding:2rem">Could not load property.</p>';
         showToast(e.message || 'Error', 'error');
@@ -695,6 +830,18 @@ function showOwnerSection(section) {
     });
     if (section === 'bookings') loadOwnerBookings();
     if (section === 'messages') loadOwnerConversations();
+    if (section === 'add-property') {
+        setTimeout(function () {
+            var la = document.getElementById('propLatitude');
+            var lo = document.getElementById('propLongitude');
+            var plat = la && la.value ? parseFloat(la.value) : null;
+            var plng = lo && lo.value ? parseFloat(lo.value) : null;
+            initOwnerPropertyMap(
+                plat != null && !isNaN(plat) ? plat : null,
+                plng != null && !isNaN(plng) ? plng : null
+            );
+        }, 200);
+    }
 }
 
 function showSeekerSection() {}
@@ -755,6 +902,17 @@ function resetPropertyForm() {
     if (eid) eid.value = '';
     var title = document.getElementById('propertyFormTitle');
     if (title) title.textContent = 'Add New Property';
+    var la = document.getElementById('propLatitude');
+    var lo = document.getElementById('propLongitude');
+    if (la) la.value = '';
+    if (lo) lo.value = '';
+    if (state.ownerMap) {
+        try {
+            state.ownerMap.remove();
+        } catch (e) {}
+        state.ownerMap = null;
+        state.ownerMarker = null;
+    }
     state.uploadedImages = [];
     var ipg = document.getElementById('imagePreviewGrid');
     if (ipg) ipg.innerHTML = '';
@@ -774,6 +932,10 @@ async function startEditProperty(id) {
         document.getElementById('propBedrooms').value = String(Math.min(p.bedrooms, 5));
         document.getElementById('propBathrooms').value = String(Math.min(p.bathrooms, 4));
         document.getElementById('propDescription').value = p.description || '';
+        var pla = document.getElementById('propLatitude');
+        var plo = document.getElementById('propLongitude');
+        if (pla) pla.value = p.latitude != null && p.latitude !== '' ? String(p.latitude) : '';
+        if (plo) plo.value = p.longitude != null && p.longitude !== '' ? String(p.longitude) : '';
         state.uploadedImages = p.images || [];
         document.querySelectorAll('.amenity-checkbox input').forEach(function (cb) {
             cb.checked = (p.amenities || []).indexOf(cb.value) !== -1;
@@ -813,6 +975,16 @@ async function handleAddProperty(e) {
         amenities: amenities,
         images: state.uploadedImages.length ? state.uploadedImages : [],
     };
+    var pLatEl = document.getElementById('propLatitude');
+    var pLngEl = document.getElementById('propLongitude');
+    if (pLatEl && pLngEl && pLatEl.value && pLngEl.value) {
+        var plat = parseFloat(pLatEl.value);
+        var plng = parseFloat(pLngEl.value);
+        if (!isNaN(plat) && !isNaN(plng)) {
+            body.latitude = plat;
+            body.longitude = plng;
+        }
+    }
     var eid = document.getElementById('editPropertyId');
     try {
         if (eid && eid.value) {
